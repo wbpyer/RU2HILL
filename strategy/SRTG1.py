@@ -1,39 +1,32 @@
 
+import abc
+
+from engine import BacktestEngine, Event, EVENT_TRADE
+
+class Strategy():
+    @abc.abstractmethod
+    def calc(self, event):
+        pass
 
 
+class Buyallin(Strategy):
+    def calc(self, event):
+        print(event.data.symbol)
 
+        if event.data.close_price < 3:
+            print("test")
+            e.put(Event(type="test"))
 
-# 1min 涨幅超过3个点，。就是符合这个模型。这个量化规则其实很简单。
-
-# 每个线程只处理一个stock ,3000,  不用考虑空，平仓是在早上开盘时候进行的。一开盘就清仓不管赚赔，全部清仓。
-
-
-class pdata():
-    low = 1
-    high = 2
-    time= 3
-    pct  = 3.2
-    code = '000009'
-
-
-l = [pdata(),pdata()]
-
-
-
-class strg1():
-    def __init__(self, stock):
-        self.stock = stock
-
-    def calc(self):
-        if self.stock.pct >= 3 :
-            queue.put("buy"+ self.stock.code)
-
+def excute(event):
+    print("buy11111")
 
 
 
 
 
 if __name__ == '__main__':
-
-    for stoc in l:
-        strg1(stoc).calc()
+   e = BacktestEngine()
+   e.register(EVENT_TRADE, Buyallin().calc)
+   e.register("test", excute)
+   print(e._handlers)
+   e.start()
