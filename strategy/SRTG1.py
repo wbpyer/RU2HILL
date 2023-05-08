@@ -3,7 +3,7 @@ import abc
 
 from engine import BacktestEngine, Event, EVENT_TRADE
 
-class Strategy():
+class Strategy:
     @abc.abstractmethod
     def calc(self, event):
         pass
@@ -12,13 +12,14 @@ class Strategy():
 class Buyallin(Strategy):
     def calc(self, event):
         print(event.data.symbol)
+        print(event.data.close_price)
 
-        if event.data.close_price < 3:
+        if event.data.close_price < 12:
             print("test")
             e.put(Event(type="test"))
 
 def excute(event):
-    print("buy11111")
+    print("buynow")
 
 
 
