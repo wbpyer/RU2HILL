@@ -10,11 +10,11 @@ from typing import Any, Callable, List
 from dataservice.dataobj import BarData
 from datetime import datetime
 from event import  EVENT_TRADE
-
-
+from  dataservice.dongfang import take_dongfang
+import pandas as pd
 
 EVENT_TIMER = "eTimer"
-
+CSV_PATH = ""
 
 class Event:
     """
@@ -146,27 +146,39 @@ class EventEngine:
             self._general_handlers.remove(handler)
 
 
-
-
-
-
-
 class BacktestEngine(EventEngine):
     def __init__(self):
         super().__init__()
-        self._data: Thread = Thread(target=self.pulldata)
+        self._data: Thread = Thread(target=self.eastmoney)
         self.ondata = True
         self._data.start()
 
-    def pulldata(self):
 
-        while self.ondata:
-            print("pull")
-            sleep(self._interval)
-            # 这里目前先设计成主动去拉数据， 以后可能会优化
-            b = BarData(symbol="000009", datetime=datetime.now(), gateway_name="A")
+    def excel(self, csv=CSV_PATH):
+        df = pd.read_csv(csv)
+        for i, c in df.iterrows():
+            b = BarData(symbol=c.code, datetime=c.date, open_price=c.open,
+                        close_price=c.close, high_price=c.high, low_price=c.low,
+                        volume=c.volume, gateway_name="excel", )
             event: Event = Event(EVENT_TRADE, b)
             self.put(event)
 
 
-
+    def eastmoney(self):
+        while self.ondata:
+            sleep(self._interval)
+            l = take_dongfang()
+            for i in l:
+                code = i["f12"]
+                close = i["f2"]
+                open = i["f17"]
+                low =i["f16"]
+                high = i["f15"]
+                volume = i["f5"]
+                gateway_name = "DF"
+                date = datetime.now()
+                b = BarData(symbol=code, datetime=date, open_price=open,
+                            close_price=close, high_price=high, low_price=low,
+                            volume=volume, gateway_name=gateway_name, )
+                event: Event = Event(EVENT_TRADE, b)
+                self.put(event)
